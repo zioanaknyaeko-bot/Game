@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Space Dodge</title>
+<style>
+    body {
+        margin: 0;
+        background: black;
+        color: white;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+    canvas {
+        background: radial-gradient(circle, #020024, #090979, #000);
+        display: block;
+        margin: auto;
+        border: 2px solid white;
+    }
+    h1 {
+        margin: 10px 0;
+    }
+</style>
+</head>
+<body>
+
+<h1>🚀 Space Dodge</h1>
+<p>Gerakkan dengan ⬅️ ➡️ | Hindari meteor!</p>
+<canvas id="game" width="400" height="600"></canvas>
+<p id="score">Skor: 0</p>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = { x: 180, y: 520, w: 40, h: 40 };
+let meteors = [];
+let score = 0;
+let speed = 3;
+let gameOver = false;
+
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft" && player.x > 0) player.x -= 20;
+    if (e.key === "ArrowRight" && player.x < canvas.width - player.w) player.x += 20;
+    if (gameOver && e.key === "Enter") restart();
+});
+
+function createMeteor() {
+    meteors.push({
+        x: Math.random() * 360,
+        y: -40,
+        size: 40
+    });
+}
+
+function drawPlayer() {
+    ctx.fillStyle = "cyan";
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+}
+
+function drawMeteors() {
+    ctx.fillStyle = "orange";
+    meteors.forEach(m => {
+        ctx.beginPath();
+        ctx.arc(m.x + 20, m.y + 20, 20, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function updateMeteors() {
+    meteors.forEach(m => m.y += speed);
+    meteors = meteors.filter(m => m.y < canvas.height);
+}
+
+function checkCollision() {
+    meteors.forEach(m => {
+        if (
+            m.x < player.x + player.w &&
+            m.x + m.size > player.x &&
+            m.y < player.y + player.h &&
+            m.y + m.size > player.y
+        ) {
+            gameOver = true;
+        }
+    });
+}
+
+function restart() {
+    meteors = [];
+    score = 0;
+    speed = 3;
+    gameOver = false;
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!gameOver) {
+        drawPlayer();
+        drawMeteors();
+        updateMeteors();
+        checkCollision();
+
+        score++;
+        speed += 0.002;
+
+        if (Math.random() < 0.03) createMeteor();
+        document.getElementById("score").innerText = "Skor: " + score;
+    } else {
+        ctx.fillStyle = "red";
+        ctx.font = "30px Arial";
+        ctx.fillText("GAME OVER", 100, 300);
+        ctx.font = "16px Arial";
+        ctx.fillText("Tekan ENTER untuk restart", 95, 340);
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
